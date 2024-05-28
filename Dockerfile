@@ -1,11 +1,11 @@
 FROM node:18-bullseye
 
-# Move updated scripts
-COPY ./bin/docker-entrypoint.js ./app/bin/docker-entrypoint.js
-COPY ./bin/build-tools.js ./app/bin/build-tools.js
-
 # Copy the real project from Cronicle to work over this UI
 COPY ./app /opt/cronicle/
+
+# Move updated scripts to docker deployment context
+COPY ./bin/docker-entrypoint.js ./opt/cronicle/bin/docker-entrypoint.js
+COPY ./bin/build-tools.js ./opt/cronicle/bin/build-tools.js
 
 WORKDIR /opt/cronicle
 
