@@ -1,8 +1,13 @@
 # Cronicle
 
+This project of `Cronicle` can manage commands in a docker deployment context. Is inspired on project [Docker Cronicle By Soulteary](https://github.com/soulteary/docker-cronicle).
+
 ## Prepare the project
 
-First, install the project Cronicle, install node dependencies (`npm install`) and following the instructions to install Cronicle with nodejs enviroment:
+* Synchronize app submodule
+* Install the project
+* Install node dependencies (`npm install`)
+* Following the instructions to install Cronicle with nodejs enviroment
 
 ```text
 Welcome to Cronicle!
@@ -30,11 +35,9 @@ Please allow for up to 60 seconds for the server to become master.
 ```
 
 * `cp -R htdocs ../` to make a copy and bind to the docker container.
-* `cp -R conf ../ to make a copy and bind to the docker container.
+* `cp -R conf ../` to make a copy and bind to the docker container.
 
-## Cronicle DockerExec Command
-
-This project of `Cronicle` can manage commands in a docker deployment context. Is an extension of [Docker Cronicle By Soulteary](https://github.com/soulteary/docker-cronicle).
+## Docker exec commands
 
 If you need to manage the crontab of a docker applications, you can bind the volume of docker host with `- /var/run/docker.sock:/var/run/docker.sock` to make that cronicle exec commands in a docker container. 
 
