@@ -1,8 +1,8 @@
 # Cronicle
 
-This project of `Cronicle` can manage commands in a docker deployment context. Is inspired on project [Docker Cronicle By Soulteary](https://github.com/soulteary/docker-cronicle).
+This project is based on `Cronicle` with the different that we can manage commands in a docker deployment context. Is inspired on project [Docker Cronicle By Soulteary](https://github.com/soulteary/docker-cronicle).
 
-## Prepare the project
+## Requirements: prepare the project
 
 * Synchronize app submodule
 * Install the project
@@ -34,10 +34,20 @@ Then, the web interface should be available at: http://laptop-0a6c7d69f262:3012/
 Please allow for up to 60 seconds for the server to become master.
 ```
 
-* `cp -R htdocs ../` to make a copy and bind to the docker container.
-* `cp -R conf ../` to make a copy and bind to the docker container.
+## Dockerfile
 
-## Docker exec commands
+This `Dockerfile` only use `node:18-bullseye` to build the container.
+Is a image based on `apt` and includes the Cronicle project if is neccesary realize any customization to the original project.
+
+This scripts update the real Cronicle scripts to make the docker context deployment:
+
+```
+# Move updated scripts
+COPY ./bin/docker-entrypoint.js ./app/bin/docker-entrypoint.js
+COPY ./bin/build-tools.js ./app/bin/build-tools.js
+```
+
+## Exec docker commands
 
 If you need to manage the crontab of a docker applications, you can bind the volume of docker host with `- /var/run/docker.sock:/var/run/docker.sock` to make that cronicle exec commands in a docker container. 
 
@@ -61,12 +71,9 @@ services:
       - ./data/data:/opt/cronicle/data
       - ./data/logs:/opt/cronicle/logs
       - ./data/plugins:/opt/cronicle/plugins
-    extra_hosts:
-      - "cronicle.lab.io:0.0.0.0"
     environment:
       - TZ=Europe/Madrid
       - DEBUG=1
-      - CRONICLE_VERSION=0.9.46
       - CRONICLE_foreground=1
       - CRONICLE_echo=1
       - CRONICLE_color=1
@@ -154,85 +161,25 @@ If you don't need a interactive terminal, don't use the flag -t. For example:
 # End of log.
 ```
 
-## Dockerfile
-
-This `Dockerfile` only use `node:18-bullseye` to build the container.
-Is a image based on `apt` and includes the Cronicle project if is neccesary realize any customization to the original project.
-
-```Dockerfile
-
-FROM node:18-bullseye
-
-# Copy the real project from Cronicle to work over this UI
-COPY ./app /opt/cronicle/
-
-WORKDIR /opt/cronicle
-
-# Prepare cronicle image content
-RUN yarn --cwd /opt/cronicle/app
-
-# Apply the Soulteary patches to Cronicle project
-COPY ./docker/patches /app/patches
-RUN patch -p3 < /app/patches/engine.patch lib/engine.js
-COPY ./docker/docker-entrypoint.js ./bin/
-
-# Install docker to exec docker commands
-
-# Instalar dependencias necesarias para instalar Docker
-RUN apt-get update -y && apt-get install -y \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release
-
-# Agregar la clave GPG oficial de Docker
-RUN mkdir -m 0755 -p /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-
-# Agregar el repositorio de Docker al sources.list
-RUN echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-    $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# Actualizar e instalar el cliente de Docker
-RUN apt-get update && apt-get install -y docker-ce-cli
-
-# Limpiar cachés de apt para reducir el tamaño de la imagen
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Add libraries required by cronicle
-RUN apt-get install -y procps curl
-
-RUN node bin/build.js dist && bin/control.sh setup
-
-CMD ["node", "bin/docker-entrypoint.js"]
-```
-
 # Deploy with application url context
 
-For this example, we need to change the url context of the application. If you need, you can modify the sample conf and make bind this sample_conf directory with the app. The app is linked by the original Cronicle repository, but the config must be updated:
+To make this we need to change the url context of the application. If you need, you can modify the sample conf and make bind this sample_conf directory with the app. The app is linked by the original Cronicle repository, but the config must be updated:
 
 ```json
 {
-  "action": "bundleCompress",
-  "uglify": false,
-  "header": "/* Copyright (c) PixlCore.com, MIT License. https://github.com/jhuckaby/Cronicle */",
-  "dest_bundle": "htdocs/js/_combo.js",
-  "html_file": "htdocs/index.html",
-  "match_key": "COMBINE_SCRIPT",
-  "dest_bundle_tag": "<script src=\"./capture/js/_combo.js\"></script>"
-},
+	"base_app_url": "http://localhost:3012/context",
+  ...
+}
 ```
 
-Now our application list this files on http//hostname/capture. For this example, we use a real world example how is a mod_proxy on apache,
-to prevent to add extra proxy rules for css, js, etc.
+Now our application url base is listen on `http://localhost:3012/context`. An exmaple with a apache proxy:
 
 ```text
-# our_domain/capture
+# our_domain/context
 # Crons server to our application
-ProxyPass "/capture"  "http://our_ip:3012/"
-ProxyPassReverse "/capture"  "http://our_ip:3012/"
-ProxyHTMLURLMap http://our_ip:3012/ /capture
+ProxyPass "/context"  "http://our_ip:3012/"
+ProxyPassReverse "/context"  "http://our_ip:3012/"
+ProxyHTMLURLMap http://our_ip:3012/ /context
 
 ProxyPreserveHost On
 SSLProxyEngine on
@@ -241,11 +188,6 @@ SSLProxyCheckPeerCN off
 SSLProxyCheckPeerName off
 SSLProxyCheckPeerExpire off
 ```
-
-# Update the web interface
-
-You can add the htdocs to make more customizable the Cronicle user interface. Modify the index-dev.html to change the HTML content.
-This changes can't be made with `setup.json` and `config.son` of sample conf. Read the `docker-compose.yml` to check the example.
 
 # Reference
 
