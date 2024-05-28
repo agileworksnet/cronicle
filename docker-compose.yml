@@ -1,0 +1,43 @@
+services:
+
+  cronicle:
+    container_name: cronicle
+    build:
+      context: .
+    image: fbaconsulting/cronicle
+    restart: unless-stopped
+    hostname: cronicle
+    ports:
+      - 3012:3012
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./data/data:/opt/cronicle/data
+      - ./data/logs:/opt/cronicle/logs
+      - ./data/plugins:/opt/cronicle/plugins
+      - ./conf:/opt/cronicle/conf
+    environment:
+      - TZ=Europe/Madrid
+      - DEBUG=1
+      - CRONICLE_VERSION=0.9.46
+      - CRONICLE_foreground=1
+      - CRONICLE_echo=1
+      - CRONICLE_color=1
+      - debug_level=1
+      - HOSTNAME=main      
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:3012/api/app/ping || exit 1"]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "10m"
+    networks:
+      - network
+
+networks:
+  network:
+    name: cronicle_network
