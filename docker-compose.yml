@@ -16,11 +16,10 @@ services:
       - ./data/data:/opt/cronicle/data
       - ./data/logs:/opt/cronicle/logs
       - ./data/plugins:/opt/cronicle/plugins
-      - ./conf:/opt/cronicle/conf
+      - ./app/conf:/opt/cronicle/conf
     environment:
       - TZ=Europe/Madrid
       - DEBUG=1
-      - CRONICLE_VERSION=0.9.46
       - CRONICLE_foreground=1
       - CRONICLE_echo=1
       - CRONICLE_color=1

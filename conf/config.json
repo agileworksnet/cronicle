@@ -3,7 +3,7 @@
 	"email_from": "admin@localhost",
 	"smtp_hostname": "localhost",
 	"smtp_port": 25,
-	"secret_key": "355b33294d6598a0e81fdfc32faded2c",
+	"secret_key": "7ab353dd7927dbbfe6dc864b0a793f48",
 	
 	"log_dir": "logs",
 	"log_filename": "[component].log",
