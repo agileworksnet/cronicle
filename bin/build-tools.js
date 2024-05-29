@@ -261,6 +261,23 @@ var bundleCompress = exports.bundleCompress = function bundleCompress( args, cal
 			if (args.strip_source_maps) {
 				raw_output = raw_output.replace(/sourceMappingURL\=\S+/g, "");
 			}
+
+			// write out our bundle
+			console.log(" --> " + args.dest_bundle);
+			fs.writeFileSync(args.dest_bundle, raw_output);
+			
+			// swap a ref link into a copy of the HTML
+			console.log(" --> " + html_file );
+			// raw_html = raw_html.replace( regexp, args.dest_bundle_tag );
+
+			// Reemplazar los enlaces en el contenido HTML
+			raw_html = raw_html.replace(/(?:href|src)="(?:\.?\/)?([^"]*)"/g, (match, p1) => {
+				// Reemplazar el valor del atributo href o src eliminando ./ y /
+				let newValue = p1.replace(/^\.?\//, '');
+				// Devolver el atributo modificado
+				return `${match.substring(0, match.indexOf('=')+1)}"${newValue}"`;
+			});
+
 			
 			// Add base url to call scripts and urls
 			const baseHref = config.base_app_url;
@@ -270,24 +287,19 @@ var bundleCompress = exports.bundleCompress = function bundleCompress( args, cal
 
 			// Verificar si la etiqueta <base> ya existe
 			if (!baseTagRegExp.test(raw_html)) {
-				// Crear una expresión regular para encontrar el cierre de la etiqueta </head>
-				const headCloseTag = '</head>';
+				// Crear una expresión regular para encontrar la apertura de la etiqueta <head>
+				const headOpenTag = '<head>';
 
-				// Insertar la etiqueta <base> justo antes del cierre de </head>
-				const baseTag = `    <base href="${baseHref}">\n`;
-				raw_html = raw_html.replace(headCloseTag, baseTag + headCloseTag);
+				// Insertar la etiqueta <base> justo después de la apertura de <head>
+				const baseTag = `<base href="${baseHref}">\n`;
+				raw_html = raw_html.replace(headOpenTag, headOpenTag + baseTag);
 
 				console.log('Etiqueta <base> agregada correctamente.');
 			}
 
-			// write out our bundle
-			console.log(" --> " + args.dest_bundle);
-			fs.writeFileSync(args.dest_bundle, raw_output);
-			
-			// swap a ref link into a copy of the HTML
-			console.log(" --> " + html_file );
-			raw_html = raw_html.replace( regexp, args.dest_bundle_tag );
+			// Genera el contenido en el arhcivo HTML
 			fs.writeFileSync(html_file, raw_html);
+			
 			
 			// now make a compressed version of the bundle
 			compressFile( args.dest_bundle, args.dest_bundle + '.gz', function(err) {
