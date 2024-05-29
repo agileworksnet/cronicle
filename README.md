@@ -1,124 +1,35 @@
-# Cronicle
+# Overview
 
-This project is based on `Cronicle` with the different that we can manage commands in a docker deployment context. Is inspired on project [Docker Cronicle By Soulteary](https://github.com/soulteary/docker-cronicle).
+This project is build based on **Cronicle**, a multi-server task scheduler and runner, with a web based front-end UI. It handles both scheduled, repeating and on-demand jobs, targeting any number of worker servers, with real-time stats and live log viewer. It's basically a fancy [Cron](https://en.wikipedia.org/wiki/Cron) replacement written in [Node.js](https://nodejs.org/).  You can give it simple shell commands, or write Plugins in virtually any language.
 
-## Requirements: prepare the project
+![Main Screenshot](https://pixlcore.com/software/cronicle/screenshots-new/job-details-complete.png)
 
-* Synchronize app submodule
-* Install the project
-* Install node dependencies (`npm install`)
-* Following the instructions to install Cronicle with nodejs enviroment
+## Documentation
 
-```text
-Welcome to Cronicle!
-First time installing?  You should configure your settings in '/opt/cronicle/conf/config.json'.
-Next, if this is a master server, type: '/opt/cronicle/bin/control.sh setup' to init storage.
-Then, to start the service, type: '/opt/cronicle/bin/control.sh start'.
-For full docs, please visit: http://github.com/jhuckaby/Cronicle
-Enjoy!
-```
+We add the Cronicle documentation to manage the application:
 
-* `cp -R sample_conf conf`
-  * You can update the default configuration here.
-* `cd bin/build.js` to build the assets in htdocs.
-* `./control.sh setup` to prepare the project with `conf`.
+- &rarr; **[Installation & Setup](https://github.com/jhuckaby/Cronicle/blob/master/docs/Setup.md)**
+- &rarr; **[Configuration](https://github.com/jhuckaby/Cronicle/blob/master/docs/Configuration.md)**
+- &rarr; **[Setup](https://github.com/jhuckaby/Cronicle/blob/master/docs/Setup.md)**
+- &rarr; **[Web UI](https://github.com/jhuckaby/Cronicle/blob/master/docs/WebUI.md)**
+- &rarr; **[Plugins](https://github.com/jhuckaby/Cronicle/blob/master/docs/Plugins.md)**
+- &rarr; **[Command Line](https://github.com/jhuckaby/Cronicle/blob/master/docs/CommandLine.md)**
+- &rarr; **[Inner Workings](https://github.com/jhuckaby/Cronicle/blob/master/docs/InnerWorkings.md)**
+- &rarr; **[API Reference](https://github.com/jhuckaby/Cronicle/blob/master/docs/APIReference.md)**
+- &rarr; **[Development](https://github.com/jhuckaby/Cronicle/blob/master/docs/Development.md)**
 
-If all configuration are correctly installed, you can see this message:
+# Features
 
-```
-Setup completed successfully!
-This server (laptop-0a6c7d69f262) has been added as the single primary master server.
-An administrator account has been created with username 'admin' and password 'admin'.
-You should now be able to start the service by typing: '/opt/cronicle/bin/control.sh start'
-Then, the web interface should be available at: http://laptop-0a6c7d69f262:3012/
-Please allow for up to 60 seconds for the server to become master.
-```
+This project can manage commands in a docker deployment context. The image is a idea extracted from [Docker Cronicle By Soulteary](https://github.com/soulteary/docker-cronicle). 
 
-## Dockerfile
+##  Docker commands with Cronicle
 
-This `Dockerfile` only use `node:18-bullseye` to build the container.
-Is a image based on `apt` and includes the Cronicle project if is neccesary realize any customization to the original project.
-
-This scripts update the real Cronicle scripts to make the docker context deployment:
-
-```
-# Move updated scripts
-COPY ./bin/docker-entrypoint.js ./app/bin/docker-entrypoint.js
-COPY ./bin/build-tools.js ./app/bin/build-tools.js
-```
-
-## Exec docker commands
-
-If you need to manage the crontab of a docker applications, you can bind the volume of docker host with `- /var/run/docker.sock:/var/run/docker.sock` to make that cronicle exec commands in a docker container. 
-
-```yml
-services:
-
-  cronicle:
-    container_name: cronicle
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    image: fbaconsulting/cronicle
-    restart: unless-stopped
-    hostname: cronicle
-    ports:
-      - 3012:3012
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
-      - ./data/data:/opt/cronicle/data
-      - ./data/logs:/opt/cronicle/logs
-      - ./data/plugins:/opt/cronicle/plugins
-    environment:
-      - TZ=Europe/Madrid
-      - DEBUG=1
-      - CRONICLE_foreground=1
-      - CRONICLE_echo=1
-      - CRONICLE_color=1
-      - debug_level=1
-      - HOSTNAME=main      
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:3012/api/app/ping || exit 1"]
-      interval: 5s
-      timeout: 1s
-      retries: 3
-    logging:
-        driver: "json-file"
-        options:
-            max-size: "10m"
-    networks:
-      - network
-
-networks:
-  network:
-    name: cronicle_network
-```
-
-# Enviroment vars
-
-Envvars has been moved to the docker-compose file:
-
-```text
-- DEBUG=1
-- CRONICLE_VERSION=0.9.46
-- CRONICLE_foreground=1
-- CRONICLE_echo=1
-- CRONICLE_color=1
-- debug_level=1
-- HOSTNAME=main  
-```
-
-# Docker commands with Cronicle
+Importnate: if you need to manage the crontab of a docker applications, you can bind the volume of docker host with `- /var/run/docker.sock:/var/run/docker.sock` to make that cronicle exec commands in a docker container.  View the `docker-compose.yml` example added to this project.
 
 `docker exec -it $(docker ps -aqf "name=container_name") sh -c "echo a && echo b"`
 
-Replace `container_name` with the docker container name. You can define it on the service on `docker-compose.yml`.
-
-## Add event on Cronicle
-
-Add event with `shell plugin` and connect the command with your container:
+* Replace `container_name` with the docker container name. You can define it on the service on `docker-compose.yml`.
+* Add event with `shell plugin` and connect the command with your container:
 
 ```text
 #!/bin/sh
@@ -127,7 +38,7 @@ Add event with `shell plugin` and connect the command with your container:
 docker exec -it $(docker ps -aqf "name=container_name") sh -c "echo a && echo b"
 ```
 
-## Prevent input device is not a TTY
+### Prevent input device is not a TTY
 
 Another requirement is that the container need tty enable to prevent ` Error: Script exited with code: 1: the input device is not a TTY` when you run the script. this error appears when docker exec command is running with flag -t, which assigs a pseudo-TTY, in a docker context with no support for interactive terminal.
 
@@ -161,9 +72,18 @@ If you don't need a interactive terminal, don't use the flag -t. For example:
 # End of log.
 ```
 
-# Deploy with application url context
+## Application with url context
 
-To make this we need to change the url context of the application. If you need, you can modify the sample conf and make bind this sample_conf directory with the app. The app is linked by the original Cronicle repository, but the config must be updated:
+Is neccesary update some scripts of the original project of `Cronicle`, that is updated on image construction:
+
+```
+# Only copy this scripts, another scripts are Cronicle property
+COPY ./bin/docker-entrypoint.js ./bin/docker-entrypoint.js
+COPY ./bin/build-tools.js ./bin/build-tools.js
+```
+
+`docker-entrypoint.js`: config the project and build the docker context of the application.
+`build-tools.js`: add the deployment context from `config.json` file. This make that in HTML compilation, the base tag is added to head.
 
 ```json
 {
@@ -194,3 +114,15 @@ SSLProxyCheckPeerExpire off
 * [Docker Cronicle By Soulteary](https://github.com/soulteary/docker-cronicle)
 * [Exec docker command](https://docs.docker.com/reference/cli/docker/container/exec/#description)
 * [Container ID by container name](https://stackoverflow.com/a/34497614)
+
+# License
+
+**The MIT License (MIT)**
+
+*Copyright (c) 2015 - 2023 Joseph Huckaby*
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -1,37 +1,61 @@
-FROM node:18-bullseye
+FROM node:18-bullseye AS Builder
 
-# Copy the real project from Cronicle to work over this UI
-COPY ./app /opt/cronicle/
-
-# Move updated scripts to docker deployment context
-COPY ./bin/docker-entrypoint.js ./opt/cronicle/bin/docker-entrypoint.js
-COPY ./bin/build-tools.js ./opt/cronicle/bin/build-tools.js
+ENV CRONICLE_VERSION=0.9.46
 
 WORKDIR /opt/cronicle
 
-# Install docker to exec docker commands
-RUN apt-get update -y && apt-get install -y \
-    ca-certificates \
+RUN curl -L -o /tmp/Cronicle-${CRONICLE_VERSION}.tar.gz https://github.com/jhuckaby/Cronicle/archive/refs/tags/v${CRONICLE_VERSION}.tar.gz
+
+# COPY Cronicle-${CRONICLE_VERSION}.tar.gz /tmp/
+RUN tar zxvf /tmp/Cronicle-${CRONICLE_VERSION}.tar.gz -C /tmp/ && \
+    mv /tmp/Cronicle-${CRONICLE_VERSION}/* . && \
+    rm -rf /tmp/* && \
+    yarn
+
+# COPY ./patches /tmp/patches
+# RUN patch -p3 < /tmp/patches/engine.patch lib/engine.js
+
+FROM node:18-alpine
+# FROM node:18-bullseye
+
+# RUN apt-get install -y procps curl
+# RUN apk add procps curl
+
+# Instalar Docker CLI en Alpine
+RUN apk add --no-cache \
+    procps \
     curl \
-    gnupg \
-    lsb-release
+    device-mapper \
+    shadow \
+    bash \
+    xz
 
-# Agregar la clave GPG oficial de Docker
-RUN mkdir -m 0755 -p /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+# Instalar Docker CLI
+ENV DOCKER_VERSION=24.0.2
 
-# Agregar el repositorio de Docker al sources.list
-RUN echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-    $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz | tar xzv && \
+    mv docker/* /usr/local/bin/ && \
+    rmdir docker
 
-# Actualizar e instalar el cliente de Docker
-RUN apt-get update && apt-get install -y docker-ce-cli
+COPY --from=builder /opt/cronicle/ /opt/cronicle/
 
-# Limpiar cachés de apt para reducir el tamaño de la imagen
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+WORKDIR /opt/cronicle
 
-# Add libraries required by cronicle
-RUN apt-get install -y procps curl
+COPY ./bin/build-tools.js ./bin
+COPY ./bin/docker-entrypoint.js ./bin
+
+COPY conf/ ./conf/
+
+ENV CRONICLE_foreground=1
+ENV CRONICLE_echo=1
+ENV CRONICLE_color=1
+ENV debug_level=1
+ENV HOSTNAME=main
+
+# Complete the install of the Cronicle project
+RUN node bin/build.js dist && bin/control.sh setup
+
+# Expone el puerto de Cronicle
+EXPOSE 3012
 
 CMD ["node", "bin/docker-entrypoint.js"]
