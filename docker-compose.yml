@@ -5,7 +5,7 @@ services:
       context: .
       args:
         CRONICLE_base_url: http://localhost:3012
-    image: fbaconsulting/cronicle
+    image: agileworksnet/cronicle
     restart: unless-stopped
     hostname: cronicle
     ports:
