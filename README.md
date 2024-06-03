@@ -24,7 +24,7 @@ This project can manage commands in a docker deployment context. The image is a 
 
 ##  Docker commands with Cronicle
 
-Importnate: if you need to manage the crontab of a docker applications, you can bind the volume of docker host with `- /var/run/docker.sock:/var/run/docker.sock` to make that cronicle exec commands in a docker container.  View the `docker-compose.yml` example added to this project.
+Important: if you need to manage the crontab of a docker applications, you can bind the volume of docker host with `- /var/run/docker.sock:/var/run/docker.sock` to make that cronicle exec commands in a docker container.  View the `docker-compose.yml` example added to this project.
 
 `docker exec -it $(docker ps -aqf "name=container_name") sh -c "echo a && echo b"`
 
@@ -82,15 +82,10 @@ COPY ./bin/docker-entrypoint.js ./bin/docker-entrypoint.js
 COPY ./bin/build-tools.js ./bin/build-tools.js
 ```
 
-`docker-entrypoint.js`: config the project and build the docker context of the application.
-`build-tools.js`: add the deployment context from `config.json` file. This make that in HTML compilation, the base tag is added to head.
+* `docker-entrypoint.js`: Config the project and build the docker context of the application.
+* `build-tools.js`: This make that in HTML compilation, the base tag is added to head.
 
-```json
-{
-	"base_app_url": "http://localhost:3012/context",
-  ...
-}
-```
+You can exec `docker-compose build --build-arg CRONICLE_base_url=http://localhost:3012/context`
 
 Now our application url base is listen on `http://localhost:3012/context`. An exmaple with a apache proxy:
 
@@ -112,8 +107,8 @@ SSLProxyCheckPeerExpire off
 # Reference
 
 * [Docker Cronicle By Soulteary](https://github.com/soulteary/docker-cronicle)
-* [Exec docker command](https://docs.docker.com/reference/cli/docker/container/exec/#description)
-* [Container ID by container name](https://stackoverflow.com/a/34497614)
+* [Exec a docker command](https://docs.docker.com/reference/cli/docker/container/exec/#description)
+* [Retrieve container ID by container name](https://stackoverflow.com/a/34497614)
 
 # License
 

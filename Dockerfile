@@ -41,6 +41,15 @@ COPY --from=builder /opt/cronicle/ /opt/cronicle/
 
 WORKDIR /opt/cronicle
 
+# Define build argument
+ARG CRONICLE_base_url
+# Set environment variable
+ENV CRONICLE_base_url=${CRONICLE_base_url}
+
+# Validate the environment variable
+RUN echo "CRONICLE_base_url is: $CRONICLE_base_url"
+RUN if [ -z "$CRONICLE_base_url" ]; then echo "Cronicle base url is not found" && exit 1; fi
+
 COPY ./bin/build-tools.js ./bin
 COPY ./bin/docker-entrypoint.js ./bin
 

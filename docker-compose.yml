@@ -1,9 +1,10 @@
 services:
-
   cronicle:
     container_name: cronicle
     build:
       context: .
+      args:
+        CRONICLE_base_url: http://localhost:3012
     image: fbaconsulting/cronicle
     restart: unless-stopped
     hostname: cronicle
@@ -25,9 +26,9 @@ services:
       - debug_level=1
       - HOSTNAME=main
     logging:
-        driver: "json-file"
-        options:
-            max-size: "10m"
+      driver: "json-file"
+      options:
+        max-size: "10m"
     networks:
       - network
 

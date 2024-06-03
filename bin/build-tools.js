@@ -268,7 +268,7 @@ var bundleCompress = exports.bundleCompress = function bundleCompress( args, cal
 			
 			// swap a ref link into a copy of the HTML
 			console.log(" --> " + html_file );
-			// raw_html = raw_html.replace( regexp, args.dest_bundle_tag );
+			raw_html = raw_html.replace( regexp, args.dest_bundle_tag );
 
 			// Reemplazar los enlaces en el contenido HTML
 			raw_html = raw_html.replace(/(?:href|src)="(?:\.?\/)?([^"]*)"/g, (match, p1) => {
@@ -277,10 +277,20 @@ var bundleCompress = exports.bundleCompress = function bundleCompress( args, cal
 				// Devolver el atributo modificado
 				return `${match.substring(0, match.indexOf('=')+1)}"${newValue}"`;
 			});
-
 			
 			// Add base url to call scripts and urls
-			const baseHref = config.base_app_url;
+			if(!process.env.CRONICLE_base_url) {
+				throw Error(
+					'Cronicle URL is not defined on image build...'
+				);
+			}
+			
+			let baseHref = process.env.CRONICLE_base_url || config.base_app_url;
+
+			// Asegurarse de que la URL termine con una barra '/' para aplicar correctamente el base tag
+			if (baseHref.slice(-1) !== '/') {
+				baseHref += '/';
+			}
 
 			// Crear una expresión regular para encontrar la etiqueta <base>
 			const baseTagRegExp = /<base\s+href=["'][^"']*["']\s*\/?>/i;
