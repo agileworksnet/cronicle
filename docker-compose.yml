@@ -4,7 +4,16 @@ services:
     build:
       context: .
       args:
-        CRONICLE_base_url: http://localhost:3012
+        CRONICLE_VERSION: ${CRONICLE_VERSION}
+        CRONICLE_base_url: ${CRONICLE_base_url}
+        TZ: ${TZ}
+        CRONICLE_foreground: ${CRONICLE_foreground}
+        CRONICLE_echo: ${CRONICLE_echo}
+        CRONICLE_color: ${CRONICLE_color}
+        debug_level: ${debug_level}
+        HOSTNAME: ${HOSTNAME}
+    env_file:
+      - .env
     image: agileworksnet/cronicle
     restart: unless-stopped
     hostname: cronicle
@@ -17,14 +26,6 @@ services:
       - ./data/data:/opt/cronicle/data
       - ./data/logs:/opt/cronicle/logs
       - ./data/plugins:/opt/cronicle/plugins
-    environment:
-      - TZ=Europe/Madrid
-      - DEBUG=1
-      - CRONICLE_foreground=1
-      - CRONICLE_echo=1
-      - CRONICLE_color=1
-      - debug_level=1
-      - HOSTNAME=main
     logging:
       driver: "json-file"
       options:

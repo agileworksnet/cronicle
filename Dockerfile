@@ -1,6 +1,8 @@
 FROM node:18-bullseye AS Builder
 
-ENV CRONICLE_VERSION=0.9.46
+# Retrieve the argument from env file
+ARG CRONICLE_VERSION
+ENV CRONICLE_VERSION=${CRONICLE_VERSION}
 
 WORKDIR /opt/cronicle
 
@@ -21,7 +23,10 @@ FROM node:18-alpine
 # RUN apt-get install -y procps curl
 # RUN apk add procps curl
 
-# Instalar Docker CLI en Alpine
+# Install Docker CLI by version
+ENV DOCKER_VERSION=24.0.2
+
+# Prepare the Docker install
 RUN apk add --no-cache \
     procps \
     curl \
@@ -29,9 +34,6 @@ RUN apk add --no-cache \
     shadow \
     bash \
     xz
-
-# Instalar Docker CLI
-ENV DOCKER_VERSION=24.0.2
 
 RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz | tar xzv && \
     mv docker/* /usr/local/bin/ && \
@@ -43,8 +45,14 @@ WORKDIR /opt/cronicle
 
 # Define build argument
 ARG CRONICLE_base_url
+
 # Set environment variable
 ENV CRONICLE_base_url=${CRONICLE_base_url}
+ENV CRONICLE_foreground=${CRONICLE_foreground}
+ENV CRONICLE_echo=${CRONICLE_echo}
+ENV CRONICLE_color=${CRONICLE_color}
+ENV debug_level=${debug_level}
+ENV HOSTNAME=${HOSTNAME}
 
 # Validate the environment variable
 RUN echo "CRONICLE_base_url is: $CRONICLE_base_url"
@@ -54,12 +62,6 @@ COPY ./bin/build-tools.js ./bin
 COPY ./bin/docker-entrypoint.js ./bin
 
 COPY conf/ ./conf/
-
-ENV CRONICLE_foreground=1
-ENV CRONICLE_echo=1
-ENV CRONICLE_color=1
-ENV debug_level=1
-ENV HOSTNAME=main
 
 # Complete the install of the Cronicle project
 RUN node bin/build.js dist && bin/control.sh setup
