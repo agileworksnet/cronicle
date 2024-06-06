@@ -14,7 +14,7 @@ services:
         CRONICLE_COLOR: ${CRONICLE_COLOR}
         CRONICLE_DEBUG_LEVEL: ${CRONICLE_DEBUG_LEVEL}
         CRONICLE_HOSTNAME: ${CRONICLE_HOSTNAME}
-    image: agileworksnet/cronicle
+    image: agileworksnet/cronicle-example
     restart: unless-stopped
     hostname: cronicle
     ports:
@@ -23,6 +23,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
+      - ./data/data:/opt/cronicle/data
+      - ./data/logs:/opt/cronicle/logs
+      - ./data/plugins:/opt/cronicle/plugins
     logging:
       driver: "json-file"
       options:

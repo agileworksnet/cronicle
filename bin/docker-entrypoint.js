@@ -19,6 +19,18 @@ if (!existsSync("./data/users")) {
   });
 }
 
+// Make the build to apply the application context on container
+exec("node /opt/cronicle/bin/build.js", (error, stdout, stderr) => {
+
+  if (error || stderr) {
+    console.log("Error to add the application context URL");
+    console.log(error.message || stderr);
+    process.exit(1);
+  }
+  console.log(`stdout: ${stdout}`);
+
+});
+
 process.chdir(dirname(__dirname));
 
 const config = require("../conf/config.json");

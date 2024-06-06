@@ -1,0 +1,22 @@
+FROM agileworksnet/cronicle
+
+ARG CRONICLE_BASE_URL
+ARG CRONICLE_FOREGROUND
+ARG CRONICLE_ECHO
+ARG CRONICLE_COLOR
+ARG CRONICLE_DEBUG_LEVEL
+ARG CRONICLE_HOSTNAME
+ARG CRONICLE_TZ
+
+# Set environment variables
+ENV CRONICLE_BASE_URL ${CRONICLE_BASE_URL}
+ENV CRONICLE_foreground ${CRONICLE_FOREGROUND}
+ENV CRONICLE_echo ${CRONICLE_ECHO}
+ENV CRONICLE_color ${CRONICLE_COLOR}
+ENV debug_level ${CRONICLE_DEBUG_LEVEL}
+ENV HOSTNAME ${CRONICLE_HOSTNAME}
+ENV TZ ${CRONICLE_TZ}
+
+# Add the custom config
+COPY ./conf/setup.json ./opt/cronicle/conf/setup.json
+COPY ./conf/config.json ./opt/cronicle/conf/config.json

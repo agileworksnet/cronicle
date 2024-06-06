@@ -14,7 +14,7 @@ services:
         CRONICLE_COLOR: ${CRONICLE_COLOR}
         CRONICLE_DEBUG_LEVEL: ${CRONICLE_DEBUG_LEVEL}
         CRONICLE_HOSTNAME: ${CRONICLE_HOSTNAME}
-    image: agileworksnet/cronicle
+    image: agileworksnet/cronicle-example
     restart: unless-stopped
     hostname: cronicle
     ports:

@@ -279,13 +279,13 @@ var bundleCompress = exports.bundleCompress = function bundleCompress( args, cal
 			});
 			
 			// Add base url to call scripts and urls
-			if(!process.env.CRONICLE_base_url) {
+			if(!process.env.CRONICLE_BASE_URL) {
 				throw Error(
 					'Cronicle URL is not defined on image build...'
 				);
 			}
 			
-			let baseHref = process.env.CRONICLE_base_url || config.base_app_url;
+			let baseHref = process.env.CRONICLE_BASE_URL || config.base_app_url;
 
 			// Asegurarse de que la URL termine con una barra '/' para aplicar correctamente el base tag
 			if (baseHref.slice(-1) !== '/') {

@@ -85,79 +85,13 @@ COPY ./bin/build-tools.js ./bin/build-tools.js
 * `docker-entrypoint.js`: Config the project and build the docker context of the application.
 * `build-tools.js`: This make that in HTML compilation, the base tag is added to head.
 
-You can define the URLs cronicle conext in build with the example .env file:
+### Examples to build the container
 
-```text
-CRONICLE_VERSION=0.9.46
-CRONICLE_base_url=http://localhost:3012/app
-TZ=Europe/Madrid
-DEBUG=1
-CRONICLE_foreground=1
-CRONICLE_echo=1
-CRONICLE_color=1
-debug_level=1
-HOSTNAME=main
-```
+You can check the [examples](./example):
 
-Now our application url base is listen on `http://localhost:3012/app`. An exmaple with a apache proxy:
-
-```text
-# our_ip/app
-# Crons server to our application
-ProxyPass "/app"  "http://our_ip:3012/"
-ProxyPassReverse "/app"  "http://our_ip:3012/"
-ProxyHTMLURLMap http://our_ip:3012/ /app
-
-ProxyPreserveHost On
-SSLProxyEngine on
-SSLProxyVerify none
-SSLProxyCheckPeerCN off
-SSLProxyCheckPeerName off
-SSLProxyCheckPeerExpire off
-```
-
-Use docker-compose to build the image with context. You use this example, but you can adapt to your requirements:
-
-```
-services:
-  cronicle:
-    container_name: cronicle
-    build:
-      context: .
-      args:
-        CRONICLE_VERSION: ${CRONICLE_VERSION}
-        CRONICLE_base_url: ${CRONICLE_base_url}
-        TZ: ${TZ}
-        CRONICLE_foreground: ${CRONICLE_foreground}
-        CRONICLE_echo: ${CRONICLE_echo}
-        CRONICLE_color: ${CRONICLE_color}
-        debug_level: ${debug_level}
-        HOSTNAME: ${HOSTNAME}
-    env_file:
-      - .env
-    image: agileworksnet/cronicle
-    restart: unless-stopped
-    hostname: cronicle
-    ports:
-      - 3012:3012
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
-      - ./data/data:/opt/cronicle/data
-      - ./data/logs:/opt/cronicle/logs
-      - ./data/plugins:/opt/cronicle/plugins
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-    networks:
-      - network
-
-networks:
-  network:
-    name: cronicle_network
-```
+* Without any config [simple](./example/simple).
+* With storage the data info [storage](./example/storage).
+* With custom config [simple](./example/config).
 
 # Reference
 
