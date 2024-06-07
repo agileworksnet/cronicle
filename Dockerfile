@@ -80,7 +80,11 @@ RUN if [ -z "$TZ" ]; then echo "Cronicle timezone is not defined" && exit 1; fi
 COPY ./bin/build-tools.js ./bin
 COPY ./bin/docker-entrypoint.js ./bin
 
+# Copy the sample conf
 COPY conf/ ./conf/
+
+# Copy the htdocs modified to fix the url
+COPY htdocs/ ./htdocs
 
 # Complete the install of the Cronicle project
 RUN node bin/build.js dist && bin/control.sh setup
