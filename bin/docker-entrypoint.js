@@ -20,7 +20,7 @@ if (!existsSync("./data/users")) {
 }
 
 // Make the build to apply the application context on container
-exec("node /opt/cronicle/bin/build.js", (error, stdout, stderr) => {
+exec("node /opt/cronicle/bin/build.js dist", (error, stdout, stderr) => {
 
   if (error || stderr) {
     console.log("Error to add the application context URL");
