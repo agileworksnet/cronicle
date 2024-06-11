@@ -85,6 +85,35 @@ COPY ./bin/build-tools.js ./bin/build-tools.js
 * `docker-entrypoint.js`: Config the project and build the docker context of the application.
 * `build-tools.js`: This make that in HTML compilation, the base tag is added to head.
 
+## webSocket configuration
+
+Cronicle requires that you have a network route from your local browser to your individual servers, via their LAN IPs. If you have a setup which prevents this, you may need to look into these two configuration options: server_comm_use_hostnames and web_socket_use_hostnames.
+
+### server_comm_use_hostnames
+Setting this parameter to 1 will force the Cronicle servers to connect to each other using hostnames rather than LAN IP addresses. This is mainly for special situations where your local server IP addresses may change, and you would prefer to rely on DNS instead. The default is 0 (disabled), meaning connect using IP addresses.
+
+### web_socket_use_hostnames
+Setting this parameter to 1 will force Cronicle's Web UI to connect to the back-end servers using their hostnames rather than IP addresses. This includes both AJAX API calls and Websocket streams. You should only need to enable this in special situations where your users cannot access your servers via their LAN IPs, and you need to proxy them through a hostname (DNS) instead. The default is 0 (disabled), meaning connect using IP addresses.
+
+```json
+"server_comm_use_hostnames": true,
+"web_direct_connect": false,
+"web_socket_use_hostnames": true,`
+```
+
+## Problems with webSockets with URL context
+
+Configure your proxy to connect `socket.io` library with your application:
+
+```
+<Location /socket.io>
+    # Configuración del proxy de WebSocket
+    ProxyPass ws://51.89.229.6:3012/socket.io
+    # Configuración del proxy de WebSocket inverso
+    ProxyPassReverse ws://51.89.229.6:3012/socket.io
+</Location>
+```
+
 ### Examples to build the container
 
 You can check the [examples](./example):

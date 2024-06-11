@@ -27,9 +27,9 @@
 	"track_manual_jobs": false,
 	"max_jobs": 0,
 	
-	"server_comm_use_hostnames": false,
+	"server_comm_use_hostnames": true,
 	"web_direct_connect": false,
-	"web_socket_use_hostnames": false,
+	"web_socket_use_hostnames": true,
 	
 	"job_memory_max": 1073741824,
 	"job_memory_sustain": 0,
