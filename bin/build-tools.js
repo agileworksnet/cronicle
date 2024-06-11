@@ -285,7 +285,7 @@ var bundleCompress = exports.bundleCompress = function bundleCompress( args, cal
 				);
 			}
 			
-			let baseHref = process.env.CRONICLE_BASE_URL || config.base_app_url;
+			let baseHref = process.env.CRONICLE_BASE_URL;
 
 			// Asegurarse de que la URL termine con una barra '/' para aplicar correctamente el base tag
 			if (baseHref.slice(-1) !== '/') {

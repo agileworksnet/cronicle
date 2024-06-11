@@ -7,7 +7,7 @@ if (!window.app) throw new Error("App Framework is not present.");
 app.extend({
 	
 	name: '',
-	preload_images: ['loading.gif'],
+	preload_images: ['./loading.gif'],
 	activeJobs: {},
 	eventQueue: {},
 	state: null,
@@ -22,7 +22,7 @@ app.extend({
 		// receive config from server
 		if (resp.code) {
 			app.showProgress( 1.0, "Waiting for master server..." );
-			setTimeout( function() { load_script( '/api/app/config' ); }, 1000 );
+			setTimeout( function() { load_script( './api/app/config' ); }, 1000 );
 			return;
 		}
 		delete resp.code;
@@ -257,35 +257,45 @@ app.extend({
 	},
 	
 	socketConnect: function() {
+
 		// init socket.io client
 		var self = this;
-		
-		var url = this.proto + this.masterHostname + ':' + this.port;
+		var url  = this.proto + this.masterHostname + ':' + this.port;
+
 		if (!config.web_socket_use_hostnames && this.servers && this.servers[this.masterHostname] && this.servers[this.masterHostname].ip) {
 			// use ip instead of hostname if available
 			url = this.proto + this.servers[this.masterHostname].ip + ':' + this.port;
 		}
+
 		if (!config.web_direct_connect) {
 			url = this.proto + location.host;
 		}
-		Debug.trace("Websocket Connect: " + url);
-		
+
 		if (this.socket) {
 			Debug.trace("Destroying previous socket");
 			this.socket.removeAllListeners();
 			if (this.socket.connected) this.socket.disconnect();
 			this.socket = null;
 		}
-		
-		var socket = this.socket = io( url, {
-			// forceNew: true,
+
+		// Config socket.io
+		var socketConfig = {
 			transports: config.socket_io_transports || ['websocket'],
 			reconnection: false,
 			reconnectionDelay: 1000,
 			reconnectionDelayMax: 2000,
 			reconnectionAttempts: 9999,
 			timeout: 3000
-		} );
+		};
+		
+		// ws://localhost:3012/socket.io/?EIO=4&transport=websocket
+		if(this.baseUrlFromHref.pathname !== "/") {
+			// The path /socket.io is required
+			socketConfig.path = this.baseUrlFromHref.pathname + '/socket.io';
+			Debug.trace("Websocket Connect with path: " + socketConfig.path);
+		}
+
+		var socket = this.socket = io(url, socketConfig);
 		
 		socket.on('connect', function() {
 			if (!Nav.inited) Nav.init();
@@ -517,19 +527,32 @@ app.extend({
 	},
 	
 	setMasterHostname: function(hostname) {
+
 		// set new master hostname, update stuff
 		Debug.trace("New Master Hostname: " + hostname);
 		this.masterHostname = hostname;
 		
 		if (config.web_direct_connect) {
+
 			this.base_api_url = this.proto + this.masterHostname + ':' + this.port + config.base_api_uri;
 			if (!config.web_socket_use_hostnames && this.servers && this.servers[this.masterHostname] && this.servers[this.masterHostname].ip) {
 				// use ip instead of hostname if available
 				this.base_api_url = this.proto + this.servers[this.masterHostname].ip + ':' + this.port + config.base_api_uri;
 			}
-		}
-		else {
-			this.base_api_url = this.proto + location.host + config.base_api_uri;
+
+		} else {
+
+			// Obtener el elemento <base>
+			this.baseElement     = document.querySelector('base');
+			this.baseElementHref = this.baseElement.getAttribute('href');
+			this.baseUrlFromHref = new URL(this.baseElementHref);
+
+			// this.base_api_url = this.proto + location.host + config.base_api_uri;
+			this.base_api_url   = (this.baseUrlFromHref.pathname !== "/") 
+				? this.baseUrlFromHref.origin + this.baseUrlFromHref.pathname + config.base_api_uri
+				: this.baseUrlFromHref.origin + config.base_api_uri
+			;
+
 		}
 		
 		Debug.trace("API calls now going to: " + this.base_api_url);

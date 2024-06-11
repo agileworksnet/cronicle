@@ -23,7 +23,7 @@ if (!existsSync("./data/users")) {
 exec("node /opt/cronicle/bin/build.js dist", (error, stdout, stderr) => {
 
   if (error || stderr) {
-    console.log("Error to add the application context URL");
+    console.log("Error building the app content");
     console.log(error.message || stderr);
     process.exit(1);
   }
